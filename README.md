@@ -1,6 +1,7 @@
-# React + TypeScript + Vite
+# 🍕 Forno Della Nonna - Pizzería Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este es el repositorio web de la pizzería artesanal Forno Della Nonna, optimizado para pedidos a través de WhatsApp con personalización de pizzas y adicionales.
+
 
 Currently, two official plugins are available:
 
