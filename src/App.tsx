@@ -166,67 +166,6 @@ function App() {
           ))}
         </div>
 
-        {/* Sección: La Cocina en Vivo 🎥 */}
-        <section 
-          className="stories-section"
-          style={{
-            background: 'linear-gradient(180deg, transparent, rgba(255, 94, 0, 0.02) 50%, rgba(255, 94, 0, 0.05) 100%)',
-            padding: '3rem 1.5rem',
-            borderRadius: '30px',
-            border: '1px solid rgba(255, 94, 0, 0.08)',
-            margin: '5rem 0',
-            overflow: 'hidden'
-          }}
-        >
-          <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
-            <h2 style={{ 
-              fontSize: '2.2rem', 
-              marginBottom: '0.75rem', 
-              color: 'white',
-              letterSpacing: '-0.03em'
-            }}>
-              La Cocina en Vivo 🎥
-            </h2>
-            <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.05rem' }}>
-              ¡Pase el cursor sobre cada video para ver la preparación real en nuestra pizzería! 👨‍🍳🔥
-            </p>
-          </div>
-
-          <div className="stories-carousel-container">
-            {STORIES_DATA.map((story) => (
-              <div 
-                key={story.id} 
-                className="story-card"
-                onMouseEnter={(e) => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video) {
-                    video.play().catch(err => console.log("Video auto-play blocked or interrupted", err));
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video) video.pause();
-                }}
-              >
-                <div className="story-play-btn">
-                  <span>▶</span>
-                </div>
-                <video 
-                  src={story.video} 
-                  className="story-video"
-                  loop 
-                  muted 
-                  playsInline
-                />
-                <div className="story-overlay">
-                  <h3 className="story-title">{story.title}</h3>
-                  <p className="story-subtitle">{story.subtitle}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
         <div style={{ marginTop: '5rem', marginBottom: '3rem', textAlign: 'center' }}>
           <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'white' }}>Bebidas y Adicionales</h2>
           <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.125rem' }}>
@@ -255,6 +194,81 @@ function App() {
             />
           ))}
         </div>
+
+        {/* Sección: La Cocina en Vivo 🎥 */}
+        <section 
+          className="stories-section"
+          style={{
+            background: 'linear-gradient(180deg, transparent, rgba(255, 94, 0, 0.02) 50%, rgba(255, 94, 0, 0.05) 100%)',
+            padding: '3rem 1.5rem',
+            borderRadius: '30px',
+            border: '1px solid rgba(255, 94, 0, 0.08)',
+            margin: '5rem 0 2rem 0',
+            overflow: 'hidden'
+          }}
+        >
+          <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
+            <h2 style={{ 
+              fontSize: '2.2rem', 
+              marginBottom: '0.75rem', 
+              color: 'white',
+              letterSpacing: '-0.03em'
+            }}>
+              La Cocina en Vivo 🎥
+            </h2>
+            <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.05rem' }}>
+              ¡Toca sobre un video en tu celular o pasa el cursor para ver la preparación real en nuestra pizzería! 👨‍🍳🔥
+            </p>
+          </div>
+
+          <div className="stories-carousel-container">
+            {STORIES_DATA.map((story) => (
+              <div 
+                key={story.id} 
+                className="story-card"
+                onMouseEnter={(e) => {
+                  const video = e.currentTarget.querySelector('video');
+                  if (video) {
+                    video.play().catch(err => console.log("Video auto-play blocked or interrupted", err));
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  const video = e.currentTarget.querySelector('video');
+                  if (video) video.pause();
+                }}
+                onClick={(e) => {
+                  const video = e.currentTarget.querySelector('video');
+                  if (video) {
+                    if (video.paused) {
+                      video.play().catch(err => console.log("Video play blocked", err));
+                    } else {
+                      video.pause();
+                    }
+                  }
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="story-play-btn">
+                  <span>▶</span>
+                </div>
+                <video 
+                  className="story-video"
+                  loop 
+                  muted 
+                  playsInline
+                  preload="metadata"
+                >
+                  <source src={story.video} type="video/mp4" />
+                  Tu navegador no soporta la reproducción de video.
+                </video>
+                <div className="story-overlay">
+                  <h3 className="story-title">{story.title}</h3>
+                  <p className="story-subtitle">{story.subtitle}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
 
       {/* Floating Cart Button */}
