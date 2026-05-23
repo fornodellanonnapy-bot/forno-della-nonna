@@ -252,6 +252,7 @@ function App() {
                   <span>▶</span>
                 </div>
                 <video 
+                  ref={(el) => { if (el) el.muted = true; }}
                   className="story-video"
                   loop 
                   muted 
