@@ -5,4 +5,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/forno-della-nonna/',
+  server: {
+    port: 5173,
+    strictPort: true
+  }
 })

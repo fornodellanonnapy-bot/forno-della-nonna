@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Header } from './components/Header';
 import { PizzaCard } from './components/PizzaCard';
 import type { PizzaItem } from './components/PizzaCard';
@@ -129,7 +129,7 @@ const EXTRAS_DATA: PizzaItem[] = [
 const STORIES_DATA = [
   {
     id: 'story_1',
-    video: 'WhatsApp Video 2026-05-22 at 09.42.20.mp4',
+    video: 'WhatsApp Video 2026-05-31 at 20.00.50.mp4',
     title: 'El Arte del Amasado 👨‍🍳',
     subtitle: 'Nuestra masa artesanal de fermentación lenta.'
   },
@@ -141,7 +141,7 @@ const STORIES_DATA = [
   },
   {
     id: 'story_3',
-    video: 'WhatsApp Video 2026-05-22 at 09.45.14.mp4',
+    video: 'WhatsApp Video 2026-05-31 at 20.31.51.mp4',
     title: '¡Al Horno de Leña! 🔥',
     subtitle: 'Horneado perfecto para ese borde crujiente.'
   },
@@ -160,6 +160,60 @@ function App() {
   const [selectedPizzaForToppings, setSelectedPizzaForToppings] = useState<PizzaItem | null>(null);
   const [selectedBeverageForFlavor, setSelectedBeverageForFlavor] = useState<PizzaItem | null>(null);
   const [selectedTonicForFlavor, setSelectedTonicForFlavor] = useState<PizzaItem | null>(null);
+
+  // --- Ambiente Musical ---
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showMusicHint, setShowMusicHint] = useState(true);
+
+  useEffect(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}Pomeriggio_al_Forno.mp3`);
+    audio.loop = true;
+    audio.volume = 0.25; // Volumen de ambiente directo
+    audioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.src = '';
+    };
+  }, []);
+
+  const toggleAmbientAudio = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      // Fade-out suave antes de pausar
+      const fadeOut = setInterval(() => {
+        if (audio.volume > 0.02) {
+          audio.volume = Math.max(0, audio.volume - 0.02);
+        } else {
+          audio.volume = 0;
+          audio.pause();
+          clearInterval(fadeOut);
+        }
+      }, 40);
+      setIsPlaying(false);
+    } else {
+      // Fade-in suave al activar
+      audio.volume = 0;
+      audio.play()
+        .then(() => {
+          setIsPlaying(true);
+          setShowMusicHint(false);
+          const target = 0.25;
+          const fadeIn = setInterval(() => {
+            if (audio.volume < target - 0.01) {
+              audio.volume = Math.min(target, audio.volume + 0.012);
+            } else {
+              audio.volume = target;
+              clearInterval(fadeIn);
+            }
+          }, 50);
+        })
+        .catch(err => console.log('Audio bloqueado por el navegador:', err));
+    }
+  };
 
   return (
     <div style={{ 
@@ -260,42 +314,106 @@ function App() {
                 key={story.id} 
                 className="story-card"
                 onMouseEnter={(e) => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video) {
-                    video.play().catch(err => console.log("Video auto-play blocked or interrupted", err));
-                  }
+                  const videos = e.currentTarget.querySelectorAll('video');
+                  videos.forEach(v => {
+                    v.play().catch(err => console.log("Video auto-play blocked", err));
+                  });
                 }}
                 onMouseLeave={(e) => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video) video.pause();
+                  const videos = e.currentTarget.querySelectorAll('video');
+                  videos.forEach(v => v.pause());
                 }}
                 onClick={(e) => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video) {
-                    if (video.paused) {
-                      video.play().catch(err => console.log("Video play blocked", err));
+                  const videos = e.currentTarget.querySelectorAll('video');
+                  videos.forEach(v => {
+                    if (v.paused) {
+                      v.play().catch(err => console.log("Video play blocked", err));
                     } else {
-                      video.pause();
+                      v.pause();
                     }
-                  }
+                  });
                 }}
                 style={{ cursor: 'pointer' }}
               >
                 <div className="story-play-btn">
                   <span>▶</span>
                 </div>
-                <video 
-                  ref={(el) => { if (el) el.muted = true; }}
-                  className="story-video"
-                  loop 
-                  muted 
-                  playsInline
-                  preload="metadata"
+                
+                <div 
+                  className="story-video-container"
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    overflow: 'hidden',
+                    backgroundColor: '#000'
+                  }}
                 >
-                  <source src={story.video} type="video/mp4" />
-                  Tu navegador no soporta la reproducción de video.
-                </video>
-                <div className="story-overlay">
+                  {/* Video de fondo desenfocado (Blur Backdrop) para rellenar estéticamente los espacios negros */}
+                  <video 
+                    className="story-video-blur"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      filter: 'blur(20px) brightness(0.4)',
+                      transform: 'scale(1.15)',
+                      pointerEvents: 'none'
+                    }}
+                    muted 
+                    playsInline
+                    preload="metadata"
+                  >
+                    <source src={story.video} type="video/mp4" />
+                  </video>
+
+                  {/* Video frontal nítido y bien centrado */}
+                  <video 
+                    ref={(el) => { if (el) el.muted = true; }}
+                    className="story-video-main"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      zIndex: 2
+                    }}
+                    muted 
+                    playsInline
+                    preload="metadata"
+                    onEnded={(e) => {
+                      const mainVideo = e.currentTarget;
+                      const container = mainVideo.parentElement;
+                      if (!container) return;
+
+                      container.classList.add('circle-wipe-active');
+                      
+                      // Al 50% de la animación (600ms), cuando el círculo está cerrado al centro, reiniciamos ambos videos
+                      setTimeout(() => {
+                        const vids = container.querySelectorAll('video');
+                        vids.forEach(v => {
+                          v.currentTime = 0;
+                          v.play().catch(err => console.log("Video replay blocked", err));
+                        });
+                      }, 600);
+
+                      // Al finalizar la animación (1200ms), removemos la clase
+                      setTimeout(() => {
+                        container.classList.remove('circle-wipe-active');
+                      }, 1200);
+                    }}
+                  >
+                    <source src={story.video} type="video/mp4" />
+                    Tu navegador no soporta la reproducción de video.
+                  </video>
+                </div>
+
+                <div className="story-overlay" style={{ zIndex: 10 }}>
                   <h3 className="story-title">{story.title}</h3>
                   <p className="story-subtitle">{story.subtitle}</p>
                 </div>
@@ -370,6 +488,76 @@ function App() {
         beverage={selectedTonicForFlavor}
         onConfirm={(beverage) => addToCart(beverage, [])}
       />
+
+      {/* Botón Flotante de Música de Ambiente */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: totalCount > 0 ? '6rem' : '2rem',
+          left: '2rem',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          gap: '0.5rem',
+          zIndex: 39,
+          transition: 'bottom 0.3s ease'
+        }}
+      >
+        {/* Globo de sugerencia "Activar música" */}
+        {showMusicHint && !isPlaying && (
+          <div style={{
+            background: 'rgba(24, 27, 33, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 94, 0, 0.3)',
+            borderRadius: '12px',
+            padding: '0.5rem 0.875rem',
+            fontSize: '0.78rem',
+            color: 'rgba(255,255,255,0.85)',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+            animation: 'fadeInUp 0.5s ease forwards',
+            pointerEvents: 'none'
+          }}>
+            🎵 Toca para activar el ambiente
+          </div>
+        )}
+
+        <button
+          onClick={toggleAmbientAudio}
+          title={isPlaying ? 'Pausar música de ambiente' : 'Activar música de ambiente'}
+          style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            background: isPlaying
+              ? 'linear-gradient(135deg, #ff5e00, #e05300)'
+              : 'rgba(24, 27, 33, 0.85)',
+            backdropFilter: 'blur(10px)',
+            border: isPlaying
+              ? '2px solid rgba(255,94,0,0.6)'
+              : '2px solid rgba(255,255,255,0.1)',
+            color: 'white',
+            fontSize: '1.3rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: isPlaying
+              ? '0 4px 20px rgba(255, 94, 0, 0.4)'
+              : '0 4px 15px rgba(0,0,0,0.5)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            animation: isPlaying ? 'musicPulse 2s ease-in-out infinite' : 'none'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          {isPlaying ? '🎵' : '🔇'}
+        </button>
+      </div>
     </div>
   );
 }
