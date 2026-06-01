@@ -163,35 +163,59 @@ function App() {
 
   // --- Ambiente Musical ---
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const hasStartedRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showMusicHint, setShowMusicHint] = useState(true);
 
   useEffect(() => {
     const audio = new Audio(`${import.meta.env.BASE_URL}Pomeriggio_al_Forno.mp3`);
     audio.loop = true;
-    audio.volume = 0; // Arranca en 0 para el fade-in
+    audio.volume = 0;
     audioRef.current = audio;
 
-    // Intentar autoplay inmediatamente al cargar la página
+    const fadeIn = () => {
+      const target = 0.25;
+      const interval = setInterval(() => {
+        if (audio.volume < target - 0.008) {
+          audio.volume = Math.min(target, audio.volume + 0.008);
+        } else {
+          audio.volume = target;
+          clearInterval(interval);
+        }
+      }, 60);
+    };
+
+    // Intentar autoplay inmediato
     audio.play()
       .then(() => {
-        // Autoplay permitido — fade-in suave hasta volumen de ambiente
+        hasStartedRef.current = true;
         setIsPlaying(true);
         setShowMusicHint(false);
-        const target = 0.25;
-        const fadeIn = setInterval(() => {
-          if (audio.volume < target - 0.008) {
-            audio.volume = Math.min(target, audio.volume + 0.008);
-          } else {
-            audio.volume = target;
-            clearInterval(fadeIn);
-          }
-        }, 60);
+        fadeIn();
       })
       .catch(() => {
-        // Autoplay bloqueado por el navegador — el botón queda listo para activar
-        audio.volume = 0.25;
-        setIsPlaying(false);
+        // Chrome bloqueó el autoplay — activar en el primer gesto del usuario
+        const startOnInteraction = () => {
+          if (hasStartedRef.current) return; // Ya inició (ej: el botón lo activó primero)
+          hasStartedRef.current = true;
+          audio.volume = 0;
+          audio.play()
+            .then(() => {
+              setIsPlaying(true);
+              setShowMusicHint(false);
+              fadeIn();
+            })
+            .catch(() => {});
+          document.removeEventListener('click', startOnInteraction);
+          document.removeEventListener('touchstart', startOnInteraction);
+        };
+        document.addEventListener('click', startOnInteraction);
+        document.addEventListener('touchstart', startOnInteraction);
+
+        return () => {
+          document.removeEventListener('click', startOnInteraction);
+          document.removeEventListener('touchstart', startOnInteraction);
+        };
       });
 
     return () => {
@@ -217,7 +241,8 @@ function App() {
       }, 40);
       setIsPlaying(false);
     } else {
-      // Fade-in suave al activar
+      // Fade-in suave al activar manualmente
+      hasStartedRef.current = true; // Marcar como iniciado para bloquear el listener del documento
       audio.volume = 0;
       audio.play()
         .then(() => {
