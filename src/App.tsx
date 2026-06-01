@@ -169,8 +169,30 @@ function App() {
   useEffect(() => {
     const audio = new Audio(`${import.meta.env.BASE_URL}Pomeriggio_al_Forno.mp3`);
     audio.loop = true;
-    audio.volume = 0.25; // Volumen de ambiente directo
+    audio.volume = 0; // Arranca en 0 para el fade-in
     audioRef.current = audio;
+
+    // Intentar autoplay inmediatamente al cargar la página
+    audio.play()
+      .then(() => {
+        // Autoplay permitido — fade-in suave hasta volumen de ambiente
+        setIsPlaying(true);
+        setShowMusicHint(false);
+        const target = 0.25;
+        const fadeIn = setInterval(() => {
+          if (audio.volume < target - 0.008) {
+            audio.volume = Math.min(target, audio.volume + 0.008);
+          } else {
+            audio.volume = target;
+            clearInterval(fadeIn);
+          }
+        }, 60);
+      })
+      .catch(() => {
+        // Autoplay bloqueado por el navegador — el botón queda listo para activar
+        audio.volume = 0.25;
+        setIsPlaying(false);
+      });
 
     return () => {
       audio.pause();
@@ -518,7 +540,7 @@ function App() {
             animation: 'fadeInUp 0.5s ease forwards',
             pointerEvents: 'none'
           }}>
-            🎵 Toca para activar el ambiente
+            {isPlaying ? '🎵 Toca para silenciar' : '🔇 Toca para activar el ambiente'}
           </div>
         )}
 
