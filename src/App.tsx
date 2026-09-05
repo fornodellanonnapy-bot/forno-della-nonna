@@ -12,43 +12,31 @@ import './index.css';
 
 const MENU_DATA: PizzaItem[] = [
   {
-    id: 'mozzarella',
-    name: 'Especial de la Casa',
-    description: 'Nuestra creación estrella: Rúcula fresca, queso parmesano en escamas y jamón crudo sobre una base crujiente. ¡Pura elegancia!',
-    price: 80000,
-    price12: 100000,
-    image: 'pizza_especial.png'
-  },
-  {
     id: 'napolitana',
-    name: 'Napolitana Gourmet',
+    name: 'Margarita',
     description: 'Base clásica con jugosas rodajas de tomate seleccionados, ajo finamente picado, mozzarella elástica y hojas de albahaca fresca cosechada al día.',
-    price: 65000,
-    price12: 80000,
-    image: 'pizza_napolitana.png'
+    price: 50000,
+    image: 'pizza_margarita.jpg'
   },
   {
     id: 'pepperoni',
     name: 'Pepperoni Premium',
     description: 'Abundantes y crujientes láminas de pepperoni de primer nivel curado artesanalmente, sobre una deliciosa y cremosa cama de queso mozzarella.',
-    price: 70000,
-    price12: 90000,
+    price: 55000,
     image: 'pizza_pepperoni.png'
   },
   {
     id: 'pollo_catupiry',
     name: 'Pollo con Katipyri',
     description: 'Pollo desmenuzado súper jugoso y sazonado a las finas hierbas, coronado con los emblemáticos y generosos hilos de queso Catupiry original.',
-    price: 70000,
-    price12: 90000,
+    price: 60000,
     image: 'pizza_pollo_catupiry.png'
   },
   {
     id: 'jamon_queso',
     name: 'Jamón y Queso',
     description: 'Láminas finas de jamón cocido seleccionado de alta calidad, doble capa de mozzarella fundida y aceitunas negras sobre nuestra masa de autor.',
-    price: 65000,
-    price12: 80000,
+    price: 55000,
     image: 'pizza_jamon_queso.png'
   },
   {
@@ -63,8 +51,7 @@ const MENU_DATA: PizzaItem[] = [
     id: 'mozzarella_clasica',
     name: 'Clásica Mozzarella',
     description: 'La reina indiscutible: abundante queso mozzarella de primera fundido a la perfección sobre nuestra salsa de tomate artesanal y hojas de albahaca fresca.',
-    price: 60000,
-    price12: 75000,
+    price: 45000,
     image: 'pizza_mozzarella.png'
   },
   {
