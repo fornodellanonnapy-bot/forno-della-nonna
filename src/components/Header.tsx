@@ -1,9 +1,12 @@
 
 interface HeaderProps {
   cartItemCount: number;
+  onLoginClick?: () => void;
+  isAdmin?: boolean;
+  onLogout?: () => void;
 }
 
-export function Header({ cartItemCount }: HeaderProps) {
+export function Header({ cartItemCount, onLoginClick, isAdmin, onLogout }: HeaderProps) {
   return (
     <header style={{
       position: 'sticky',
@@ -73,19 +76,40 @@ export function Header({ cartItemCount }: HeaderProps) {
           </div>
         </div>
         
-        {/* We can place a simple cart indicator here if we want */}
-        {cartItemCount > 0 && (
-          <div style={{
-            background: 'var(--bg-card)',
-            padding: '0.5rem 1rem',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            fontSize: '0.875rem',
-            fontWeight: 600
-          }}>
-            🛒 {cartItemCount}
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {/* Botón de admin/login */}
+          <button
+            onClick={isAdmin ? onLogout : onLoginClick}
+            style={{
+              background: isAdmin ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
+              border: isAdmin ? 'none' : '1px solid rgba(255,255,255,0.2)',
+              borderRadius: 'var(--radius-lg)',
+              color: 'white',
+              padding: '0.5rem 1rem',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            {isAdmin ? '🔓 Salir Admin' : '🔒 Iniciar Sesión'}
+          </button>
+
+          {cartItemCount > 0 && (
+            <div style={{
+              background: 'var(--bg-card)',
+              padding: '0.5rem 1rem',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              fontSize: '0.875rem',
+              fontWeight: 600
+            }}>
+              🛒 {cartItemCount}
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

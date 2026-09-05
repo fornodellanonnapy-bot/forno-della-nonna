@@ -6,6 +6,9 @@ import { CartModal } from './components/CartModal';
 import { ToppingsModal } from './components/ToppingsModal';
 import { FlavorModal } from './components/FlavorModal';
 import { TonicFlavorModal } from './components/TonicFlavorModal';
+import { LoginModal } from './components/LoginModal';
+import { AdminSettingsModal } from './components/AdminSettingsModal';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { useCart } from './hooks/useCart';
 import { ShoppingCart } from 'lucide-react';
 import './index.css';
@@ -141,12 +144,20 @@ const STORIES_DATA = [
 ];
 
 
-function App() {
+function AppContent() {
+  const { isAdmin, logout } = useAuth();
   const { items, addToCart, removeFromCart, clearCart, totalCount, totalPrice } = useCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showAdminSettings, setShowAdminSettings] = useState(false);
   const [selectedPizzaForToppings, setSelectedPizzaForToppings] = useState<PizzaItem | null>(null);
   const [selectedBeverageForFlavor, setSelectedBeverageForFlavor] = useState<PizzaItem | null>(null);
   const [selectedTonicForFlavor, setSelectedTonicForFlavor] = useState<PizzaItem | null>(null);
+  const [menu, setMenu] = useState<PizzaItem[]>(MENU_DATA);
+
+  const handleEditPizza = (updated: PizzaItem) => {
+    setMenu(prev => prev.map(p => p.id === updated.id ? updated : p));
+  };
 
   // --- Ambiente Musical ---
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -255,7 +266,61 @@ function App() {
       paddingBottom: '6rem',
       color: 'var(--text-main)'
     }}>
-      <Header cartItemCount={totalCount} />
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+      {showAdminSettings && <AdminSettingsModal onClose={() => setShowAdminSettings(false)} />}
+
+      {/* Barra de Admin */}
+      {isAdmin && (
+        <div style={{
+          background: 'rgba(255,94,0,0.15)',
+          borderBottom: '1px solid rgba(255,94,0,0.3)',
+          padding: '0.5rem 1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '0.875rem',
+          color: 'rgba(255,255,255,0.8)',
+        }}>
+          <span>✏️ <strong style={{color:'var(--primary)'}}>Modo Administrador</strong> — Haz clic en el ✏️ de cada pizza para editarla</span>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => setShowAdminSettings(true)}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '0.5rem',
+                color: 'white',
+                padding: '0.3rem 0.8rem',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+              }}
+            >
+              ⚙️ Cambiar Contraseña
+            </button>
+            <button
+              onClick={logout}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '0.5rem',
+                color: 'white',
+                padding: '0.3rem 0.8rem',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+              }}
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      )}
+
+      <Header 
+        cartItemCount={totalCount} 
+        isAdmin={isAdmin}
+        onLoginClick={() => setShowLogin(true)}
+        onLogout={logout}
+      />
       
       <main className="container" style={{ marginTop: '2rem' }}>
         <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
@@ -270,11 +335,12 @@ function App() {
           gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
           gap: '2rem' 
         }}>
-          {MENU_DATA.map(pizza => (
+          {menu.map(pizza => (
             <PizzaCard 
               key={pizza.id} 
               pizza={pizza} 
-              onAdd={(p) => setSelectedPizzaForToppings(p)} 
+              onAdd={(p) => setSelectedPizzaForToppings(p)}
+              onEdit={handleEditPizza}
             />
           ))}
         </div>
@@ -556,6 +622,8 @@ function App() {
           </div>
         )}
 
+        {/* Botón de login removido de aquí, ahora está en el Header */}
+
         <button
           onClick={toggleAmbientAudio}
           title={isPlaying ? 'Pausar música de ambiente' : 'Activar música de ambiente'}
@@ -596,4 +664,13 @@ function App() {
   );
 }
 
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
 export default App;
+
